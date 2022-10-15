@@ -4,21 +4,43 @@ import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Table from 'react-bootstrap/Table';
+import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { BsList, BsGrid3X2Gap } from 'react-icons/bs';
 
-function Books(props) {
+function Books() {
     const [error, setError] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [items, setItems] = useState([]);
+    const [view, setView] = useState('list');
     const [viewType, setViewType] = useState('list');
-    const {localView, setLocalView, setSelectedBook} = props;
     const viewTypeClick = (me, viewType) => {
         setTimeout(() => { me.blur(); }, 200);
         setViewType(viewType);
       };
-    
+    const sendCreateBook = (e) => {
+        e.preventDefault();
+        var book = {
+            title: e.target.title.value,
+            author: e.target.author.value,
+            year: parseInt(e.target.year.value),
+            category: parseInt(e.target.category.value)
+        };
+
+        fetch(`${process.env.REACT_APP_DOMAIN}/books/create`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(book)
+        });
+
+        getBooks();
+        setView('list');
+    }
+
     const getBooks = () => {
         let a = `${process.env.REACT_APP_DOMAIN}/books`;
         fetch(a)
@@ -37,11 +59,6 @@ function Books(props) {
                 }
             );
     };
-    const rowClick = (e, item) => {
-        //console.log(item);
-        setSelectedBook(item); 
-        setLocalView("booksUpdate");
-    };
 
     // Note: the empty deps array [] means
     // this useEffect will run once
@@ -56,7 +73,7 @@ function Books(props) {
         return <div>Loading...</div>;
     } else {
         let content;
-        
+        if (view === 'list') {
             // table
             let list =
                 <Table striped bordered hover>
@@ -71,7 +88,7 @@ function Books(props) {
                     </thead>
                     <tbody>
                         {items.map(item => (
-                            <tr key={item.id} onClick={e => rowClick(e, item)}>
+                            <tr key={item.id}>
                                 <td>{item.id}</td>
                                 <td>{item.title}</td>
                                 <td>{item.author}</td>
@@ -120,7 +137,7 @@ function Books(props) {
                     </Row>
                     <Row>
                         <Col>
-                            <Button onClick={() => { setLocalView('booksCreate') }}>Create</Button>
+                            <Button onClick={() => { setView('create') }}>Create</Button>
                         </Col>
                         <Col style={{display: 'flex', justifyContent: 'flex-end'}}>
                             <ButtonGroup>
@@ -135,7 +152,40 @@ function Books(props) {
                         </Col>
                     </Row>
                 </Col>;
-        
+        } else if (view === 'create') {
+            content =
+                <Col>
+                    <Form onSubmit={e => sendCreateBook(e)}>
+                        <p style={{fontSize: 'x-large'}}>Create Book</p>
+                        <Form.Group className='mb-3' controlId='formTitle'>
+                            <Form.Label>Title</Form.Label>
+                            <Form.Control type='text' name='title' placeholder='Enter book title' required />
+                            <Form.Text className='text-muted'>
+                                Enter the book's great title.
+                            </Form.Text>
+                        </Form.Group>
+                        <Form.Group className='mb-3' controlId='formAuthor'>
+                            <Form.Label>Author</Form.Label>
+                            <Form.Control type='text' name='author' placeholder='Enter book author' required />
+                            <Form.Text className='text-muted'>
+                                Enter the great author of this book.
+                            </Form.Text>
+                        </Form.Group>
+                        <Form.Group className='mb-3' controlId='formYear'>
+                            <Form.Label>Year</Form.Label>
+                            <Form.Control type='number' name='year' placeholder='Enter book release year' required />
+                        </Form.Group>
+                        <Form.Group className='mb-3' controlId='formCategory'>
+                            <Form.Label>Category</Form.Label>
+                            <Form.Control type='number' name='category' placeholder='Enter book category' required />
+                        </Form.Group>
+                        <ButtonGroup>
+                            <Button type='submit'>Create</Button>
+                            <Button variant='light' onClick={() => { setView('list') }}>Cancel</Button>
+                        </ButtonGroup>
+                    </Form>
+                </Col>
+        }
         return (
             <Col>
                 <Row>
