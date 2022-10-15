@@ -12,33 +12,38 @@ function BooksUpdate(props) {
   const sendUpdateBook = (e) => {
     e.preventDefault();
     var book = {
+      id: updatedBook.id,
       title: e.target.title.value,
       author: e.target.author.value,
       year: parseInt(e.target.year.value),
       category: parseInt(e.target.category.value),
     };
-
-    fetch(`${process.env.REACT_APP_DOMAIN}/books/update`, {
-      method: "POST",
+    console.log(book);
+    fetch(`${process.env.REACT_APP_DOMAIN}/books/${updatedBook.id}`, {
+      method: "PUT",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
       body: JSON.stringify(book),
+    }).then((res) => {
+      if (res.status == 500) {
+        console.error("something is wrong");
+      } else if (res.status == 200) {
+        console.log("completed!");
+        setLocalView("books");
+      }
     });
-
-    setLocalView("books");
   };
   const inputHandler = (e) => {
-    setUpdatedBook({[e.target.name]: e.target.value});
-    console.log(updatedBook);
+    setUpdatedBook({ ...updatedBook, [e.target.name]: e.target.value });
+    //console.log(updatedBook);
   };
 
   // Note: the empty deps array [] means
   // this useEffect will run once
   // similar to componentDidMount()
-  useEffect(() => {
-  }, []);
+  useEffect(() => {}, []);
   let content;
   content = (
     <Col>
@@ -64,6 +69,8 @@ function BooksUpdate(props) {
             type="text"
             name="author"
             placeholder="Enter book author"
+            value={updatedBook.author}
+            onChange={inputHandler}
             required
           />
           <Form.Text className="text-muted">
@@ -76,6 +83,8 @@ function BooksUpdate(props) {
             type="number"
             name="year"
             placeholder="Enter book release year"
+            value={updatedBook.year}
+            onChange={inputHandler}
             required
           />
         </Form.Group>
@@ -85,11 +94,13 @@ function BooksUpdate(props) {
             type="number"
             name="category"
             placeholder="Enter book category"
+            value={updatedBook.category}
+            onChange={inputHandler}
             required
           />
         </Form.Group>
         <ButtonGroup>
-          <Button type="submit">Create</Button>
+          <Button type="submit">Save</Button>
           <Button
             variant="light"
             onClick={() => {

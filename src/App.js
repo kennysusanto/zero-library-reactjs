@@ -21,11 +21,12 @@ function App() {
   } else if (view === "booksUpdate") {
     content = <BooksUpdate localView={view} setLocalView={setView} selectedBook={selectedBook} />;
   }
+  let booksPages = ["books", "booksCreate", "booksUpdate"];
   let nav = (
     <Container id="nav">
       <ButtonGroup size="lg" className="mb-2 w-100">
         <Button
-          variant={view === "books" || view === "booksCreate" ? "primary" : "light"}
+          variant={booksPages.includes(view) ? "primary" : "light"}
           onClick={(e) => navClick(e.target, "books")}
         >
           <BsCollection></BsCollection> Books
